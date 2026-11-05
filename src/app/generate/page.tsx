@@ -38,6 +38,32 @@ const INITIAL_FORM: FormState = {
 
 type Status = "idle" | "loading" | "success" | "error";
 
+const SYSTEM_PROMPT = `Du bist ContentPilot, ein Experte für SEO-Blogartikel für lokale Dienstleister in deutschsprachigen Ländern.
+
+Deine Aufgabe: Erstelle einen hochwertigen, hilfreichen und suchmaschinenoptimierten Blogartikel.
+
+Antworte AUSSCHLIESSLICH mit einem JSON-Objekt in genau dieser Struktur:
+{
+  "title": "Artikel-Titel (max. 60 Zeichen)",
+  "slug": "url-freundlicher-slug (klein, mit Bindestrich, deutsch)",
+  "metaTitle": "Meta-Titel (max. 60 Zeichen)",
+  "metaDescription": "Meta-Beschreibung (max. 155 Zeichen)",
+  "primaryKeyword": "Haupt-Keyword",
+  "keywords": ["Keyword 1", "Keyword 2"],
+  "sections": [
+    { "heading": "Abschnittstitel", "body": "Text mit Absätzen, Absätze durch Leerzeile getrennt" }
+  ]
+}
+
+Regeln:
+- title: max. 60 Zeichen, enthält das Haupt-Keyword, klickwürdig und informativ.
+- slug: klein, mit Bindestrich, ohne Sonderzeichen, deutsch/englisch gemischt.
+- metaTitle: max. 60 Zeichen, mit Keyword, Titel-Klausel.
+- metaDescription: max. 155 Zeichen, mit Call-to-Action, mit Keyword.
+- sections: 3 bis 6 Abschnitte. Erst Abschnitt: Einleitung. Dann Hauptinhalte (2-4). Dann Fazit. Body-Texte in natürlicher, gut lesbarer deutscher Sprache. Absätze durch Leerzeile trennen. Keine Markdown-Sonderzeichen im Body, nur Klartext-Absätze.
+
+Artikel sollten fachlich fundiert, aber verständlich für lokale Kunden sein und lokale Bezüge (Region, Stadt) enthalten.`;
+
 export default function GeneratePage() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [status, setStatus] = useState<Status>("idle");
@@ -56,22 +82,47 @@ export default function GeneratePage() {
     setError("");
     setPost(null);
     try {
-      const res = await fetch("/api/generate", {
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY ?? ""}`,
+        },
         body: JSON.stringify({
-          ...form,
-          keywords: form.keywords
-            .split(",")
-            .map((k) => k.trim())
-            .filter(Boolean),
+          model: process.env.NEXT_PUBLIC_OPENAI_MODEL || "gpt-4o",
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            {
+              role: "user",
+              content: JSON.stringify({
+                businessName: form.businessName || form.niche,
+                niche: form.niche,
+                location: form.location,
+                services: form.services,
+                topic: form.topic || `${form.niche} für ${form.location}`,
+                keywords: form.keywords
+                  .split(",")
+                  .map((k) => k.trim())
+                  .filter(Boolean),
+                tone: form.tone,
+              }),
+            },
+          ],
         }),
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error ?? "Artikel konnte nicht generiert werden.");
+        throw new Error(data.error?.message ?? "Artikel konnte nicht generiert werden.");
       }
-      setPost(data.post as Post);
+      const content =
+        typeof data.choices?.[0]?.message?.content === "string"
+          ? JSON.parse(data.choices[0].message.content)
+          : null;
+      if (!content) {
+        throw new Error("Artikel konnte nicht generiert werden.");
+      }
+      setPost(content as Post);
       setStatus("success");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
