@@ -36,7 +36,7 @@ export function Hero() {
             Jetzt kostenlos-artikel generieren
           </Link>
           <Link
-            href="#pricing"
+            href="/#pricing"
             className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-300 bg-white px-8 text-base font-semibold text-zinc-900 transition-colors hover:bg-zinc-50"
           >
             Preise ansehen
@@ -98,7 +98,7 @@ const FEATURES = [
 
 export function Features() {
   return (
-    <section id="features" className="mx-auto max-w-6xl px-6 py-20 sm:py-28">
+    <section id="features" className="scroll-mt-20 mx-auto max-w-6xl px-6 py-20 sm:py-28">
       <div className="mx-auto max-w-2xl text-center">
         <h2 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
           Alles, was ein lokales
@@ -146,7 +146,7 @@ export function HowItWorks() {
     },
   ];
   return (
-    <section id="how-it-works" className="border-y border-zinc-200 bg-white">
+    <section id="how-it-works" className="scroll-mt-20 border-y border-zinc-200 bg-white">
       <div className="mx-auto max-w-6xl px-6 py-20 sm:py-28">
         <h2 className="text-center text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
           So einfach funktioniert&apos;s
@@ -186,7 +186,7 @@ const FAQS = [
 
 export function Faq() {
   return (
-    <section id="faq" className="mx-auto max-w-6xl px-6 py-20 sm:py-28">
+    <section id="faq" className="scroll-mt-20 mx-auto max-w-6xl px-6 py-20 sm:py-28">
       <div className="mx-auto max-w-3xl">
         <h2 className="text-center text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
           Häufige Fragen

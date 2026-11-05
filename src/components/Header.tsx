@@ -27,7 +27,7 @@ export default function Header() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="flex items-center gap-4 overflow-x-auto md:gap-8">
           <Link
             href="/#features"
             className="text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-900"

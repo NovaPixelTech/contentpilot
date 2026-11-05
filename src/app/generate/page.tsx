@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
 
@@ -38,6 +38,8 @@ const INITIAL_FORM: FormState = {
 
 type Status = "idle" | "loading" | "success" | "error";
 
+const VALID_PLANS = ["starter", "growth", "scale"];
+
 const SYSTEM_PROMPT = `Du bist ContentPilot, ein Experte für SEO-Blogartikel für lokale Dienstleister in deutschsprachigen Ländern.
 
 Deine Aufgabe: Erstelle einen hochwertigen, hilfreichen und suchmaschinenoptimierten Blogartikel.
@@ -70,6 +72,15 @@ export default function GeneratePage() {
   const [error, setError] = useState<string>("");
   const [post, setPost] = useState<Post | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [plan, setPlan] = useState<string>("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const planParam = params.get("plan")?.toLowerCase() ?? "";
+    if (VALID_PLANS.includes(planParam)) {
+      setPlan(planParam);
+    }
+  }, []);
 
   function update(key: keyof FormState, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -96,6 +107,7 @@ export default function GeneratePage() {
             {
               role: "user",
               content: JSON.stringify({
+                plan: plan || undefined,
                 businessName: form.businessName || form.niche,
                 niche: form.niche,
                 location: form.location,
@@ -150,12 +162,12 @@ export default function GeneratePage() {
     <div className="min-h-screen bg-zinc-50">
       <header className="border-b border-zinc-200 bg-white">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
-          <a href="/" className="text-lg font-semibold tracking-tight text-zinc-900">
+          <Link href="/" className="text-lg font-semibold tracking-tight text-zinc-900">
             Content<span className="text-indigo-600">Pilot</span>
-          </a>
-          <a href="/" className="text-sm font-medium text-zinc-600 hover:text-zinc-900">
+          </Link>
+          <Link href="/" className="text-sm font-medium text-zinc-600 hover:text-zinc-900">
             ← Zur Startseite
-          </a>
+          </Link>
         </div>
       </header>
 
